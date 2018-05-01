@@ -1,0 +1,23 @@
+#!/bin/bash
+set -eu
+
+echo
+echo "Adding custom tasks..."
+cp -fR pipelines/pcf-pipelines-patcher/tasks/* pcf-pipelines/tasks
+
+echo
+echo "Modifying yml..."
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_URL/g" pcf-pipelines/tasks/export-config/task.yml
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_USERNAME/$DOCKER_REGISTRY_USERNAME/g" pcf-pipelines/tasks/export-config/task.yml
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_PASSWORD/$DOCKER_REGISTRY_PASSWORD/g" pcf-pipelines/tasks/export-config/task.yml
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_IMAGE_EXPORT_CONFIG/$DOCKER_REGISTRY_IMAGE_EXPORT_CONFIG/g" pcf-pipelines/tasks/export-config/task.yml
+
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_URL/g" pipelines/pcf-pipelines-patcher/operations/use-docker-private-registry.yml
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_USERNAME/$DOCKER_REGISTRY_USERNAME/g" pipelines/pcf-pipelines-patcher/operations/use-docker-private-registry.yml
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_PASSWORD/$DOCKER_REGISTRY_PASSWORD/g" pipelines/pcf-pipelines-patcher/operations/use-docker-private-registry.yml
+sed -i "s/CHANGE_ME_DOCKER_REGISTRY_IMAGE_CFLINUXFS2/$DOCKER_REGISTRY_IMAGE_CFLINUXFS2/g" pipelines/pcf-pipelines-patcher/operations/use-docker-private-registry.yml
+
+echo
+echo "Changes:"
+cat pcf-pipelines/tasks/export-config/task.yml
+cat pipelines/pcf-pipelines-patcher/operations/use-docker-private-registry.yml

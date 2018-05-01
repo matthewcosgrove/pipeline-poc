@@ -1,0 +1,30 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    insecure_registries:
+      - CHANGE_ME_DOCKER_REGISTRY_URL
+    username: CHANGE_ME_DOCKER_REGISTRY_USERNAME
+    password: CHANGE_ME_DOCKER_REGISTRY_PASSWORD
+    repository: CHANGE_ME_DOCKER_REGISTRY_URL/CHANGE_ME_DOCKER_REGISTRY_IMAGE_EXPORT_CONFIG
+    tag: "latest"
+inputs:
+  - name: pcf-pipelines
+  - name: configs
+
+params:
+  OPSMAN_USERNAME:
+  OPSMAN_PASSWORD:
+  OPSMAN_DOMAIN_OR_IP_ADDRESS:
+  PRODUCT_NAME:
+  GPG_KEY:
+  ENVIRONMENT:
+
+outputs:
+  - name: updates
+    path: updates
+
+run:
+  path: pcf-pipelines/tasks/export-config/task.sh

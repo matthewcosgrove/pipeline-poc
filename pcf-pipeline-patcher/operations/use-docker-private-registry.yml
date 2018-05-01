@@ -1,0 +1,10 @@
+---
+- op: replace
+  path: /image_resource/source
+  value:
+    insecure_registries:
+      - CHANGE_ME_DOCKER_REGISTRY_URL
+    username: CHANGE_ME_DOCKER_REGISTRY_USERNAME
+    password: CHANGE_ME_DOCKER_REGISTRY_PASSWORD
+    repository: CHANGE_ME_DOCKER_REGISTRY_URL/CHANGE_ME_DOCKER_REGISTRY_IMAGE_CFLINUXFS2
+    tag: "latest"
