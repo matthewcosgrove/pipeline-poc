@@ -27,23 +27,10 @@ fi
 
 echo "Downloading stemcell $STEMCELL_VERSION"
 
-product_slug=$(
-  jq --raw-output \
-    '
-    if any(.Dependencies[]; select(.Release.Product.Name | contains("Stemcells for PCF (Windows)"))) then
-      "stemcells-windows-server"
-    else
-      "stemcells"
-    end
-    ' < pivnet-product/metadata.json
-)
-
-echo Downloading $product_slug
-
 IAAS=vsphere
 
 pivnet-cli login --api-token="$PIVNET_API_TOKEN"
-pivnet-cli download-product-files -p "$product_slug" -r $STEMCELL_VERSION -g "*${IAAS}*" --accept-eula
+pivnet-cli download-product-files -p "stemcell" -r $STEMCELL_VERSION -g "*${IAAS}*" --accept-eula
 
 SC_FILE_PATH=`find ./ -name *.tgz`
 
@@ -52,7 +39,8 @@ if [ ! -f "$SC_FILE_PATH" ]; then
   exit 1
 fi
 
-echo TODO: embed stemcell within zip
+echo Embedding stemcell within final product tgz file
+cp *.tgz pivnet-product
 
 # taken from embedded script in original pivnet-to-s3 pipeline.yml
 cd pivnet-product/ && tar -czvf ../tile/$(cat ./version | cut -f1 -d"#").tgz . && cd ..
