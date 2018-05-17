@@ -40,7 +40,7 @@ if [ ! -f "$SC_FILE_PATH" ]; then
 fi
 
 echo Embedding stemcell within final product tgz file
-cp *.tgz pivnet-product
+mv *.tgz pivnet-product
 
 # taken from embedded script in original pivnet-to-s3 pipeline.yml
 cd pivnet-product/ && tar -czvf ../tile/$(cat ./version | cut -f1 -d"#").tgz . && cd ..
