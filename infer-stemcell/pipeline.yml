@@ -1,0 +1,80 @@
+---
+resource_types:
+- name: pivnet
+  type: docker-image
+  tags: [proxy]
+  source:
+    repository: ((docker-private-registry_url))/pivotalcf/pivnet-resource
+    tag: latest
+    insecure_registries:
+    - ((docker-private-registry_url))
+    username: ((docker-private-registry_username))
+    password: ((docker-private-registry_password))
+
+resources:
+- name: pipelines
+  type: git
+  tags: [internal-proxy]
+  source:
+    branch: master
+    uri: ((pipelines_uri))
+    username: ((pipelines_username))
+    password: ((pipelines_password))
+    private_key: ((pipelines_private_key))
+    tag_filter: ((pipelines_version))
+
+- name: elastic-runtime
+  type: pivnet
+  tags: [proxy]
+  source:
+    api_token: {{pivnet_token}}
+    product_slug: elastic-runtime
+    product_version: {{elastic-runtime_version}}
+- name: s3-tile-ert
+  type: s3
+  source:
+    bucket: ert
+    regexp: (.*).tgz
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+    endpoint: ((s3_endpoint))
+    disable_ssl: true
+
+jobs:
+- name: upload-elastic-runtime-to-s3
+  plan:
+  - get: pipelines
+    tags: [proxy]
+  - get: elastic-runtime
+    tags: [proxy]
+    trigger: true
+    params:
+      globs:
+      - "cf*.pivotal"
+      - "*.json"
+  - task: zip-tile-with-stemcell-dependency
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-private-registry_url))/czero/cflinuxfs2
+          tag: latest
+          insecure_registries:
+          - ((docker-private-registry_url))
+          username: ((docker-private-registry_username))
+          password: ((docker-private-registry_password))
+      inputs:
+        - name: elastic-runtime
+          path: pivnet-product
+        - name: pipelines
+      params:
+        PIVNET_API_TOKEN: {{pivnet_token}}
+      run:
+        path: pipelines/infer-stemcell/scripts/task.sh
+      outputs:
+        - name: tile
+          path: tile
+  - put: s3-tile-ert
+    params:
+      file: tile/*.tgz

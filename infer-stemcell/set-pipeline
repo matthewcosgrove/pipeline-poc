@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eu
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+target=$1
+
+fly -t $target sp -p infer-stemcell-poc -c $SCRIPT_DIR/pipeline.yml -l $SCRIPT_DIR/../../configuration/labs/pcf-automation-deployments/lab/rp1/pipelines/infer-stemcell/settings.yml
