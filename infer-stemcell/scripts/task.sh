@@ -19,7 +19,7 @@ STEMCELL_VERSION=$(
     '
 )
 
-echo "Attempting to downloading stemcell $STEMCELL_VERSION"
+echo "Attempting to download stemcell $STEMCELL_VERSION"
 
 if [ -z "$STEMCELL_VERSION" ]; then
   echo "Cannot bundle stemcell with product"
