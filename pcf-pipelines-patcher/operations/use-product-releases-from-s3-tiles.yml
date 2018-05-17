@@ -1,0 +1,48 @@
+---
+- op: replace
+  path: /resources/name=tile
+  value:
+    name: tile
+    type: s3
+    source:
+      bucket: {{s3-bucket}}
+      access_key_id: {{s3-access-key-id}}
+      secret_access_key: {{s3-secret-access-key}}
+      endpoint: {{s3-endpoint}}
+      regexp: ((product_version_regex)).tgz
+      disable_ssl: ((s3-disable-ssl))
+
+- op: replace
+  path: /jobs/name=upload-and-stage-tile/get=pivnet-product/params
+  value:
+    unpack: true
+
+- op: replace
+  path: /jobs/name=apply-changes/get=pivnet-product/params
+  value:
+    unpack: true
+
+- op: remove
+  path: /jobs/name=regulator/get=tile/params
+
+- op: remove
+  path: /resource_types
+
+- op: add
+  path: /resources/-
+  value:
+    name: stemcell
+    type: s3
+    source:
+      bucket: stemcells
+      access_key_id: {{s3-access-key-id}}
+      secret_access_key: {{s3-secret-access-key}}
+      endpoint: {{s3-endpoint}}
+      regexp: bosh-stemcell-((stemcell_version_regex)).tgz
+      disable_ssl: ((s3-disable-ssl))
+
+- op: add
+  path: /jobs/name=upload-and-stage-tile/get=pcf-pipelines
+  value:
+    do:
+    - get: stemcell

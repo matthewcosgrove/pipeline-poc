@@ -6,6 +6,18 @@ echo "Adding custom tasks..."
 cp -fR pipelines/pcf-pipelines-patcher/tasks/* pcf-pipelines/tasks
 
 echo
+echo "Modifying task scripts..."
+# Customize upload-product-and-stemcell task to use s3
+sed -i 's/Downloading stemcell/Uploading stemcell/' pcf-pipelines/tasks/upload-product-and-stemcell/task.sh # Delete pivnet stemcell download references
+sed -i '/pivnet-cli/d' pcf-pipelines/tasks/upload-product-and-stemcell/task.sh # Delete pivnet-cli references
+# TODO: Remove after issue resolved https://github.com/pivotal-cf/pcf-pipelines/issues/176
+sed -i "s^version=.*^version=\"\$\(unzip -p pivnet-product\/\*\.pivotal \'metadata\/\*\.yml\' \| grep \'product_version:\' \| cut -d \':\' -f 2 \| tr -d \' \' \| tr -d \"\'\"\)\"\nversion=\"\$\{version\/\\\\\&product-version\}\" \nversion=\"\$\{version\%\\\\\"\}\" \nversion=\"\$\{version#\\\\\"\}\"^" pcf-pipelines/tasks/stage-product/task.sh
+
+echo
+echo "Changes:"
+cat pcf-pipelines/tasks/upload-product-and-stemcell/task.sh
+
+echo
 echo "Modifying yml..."
 sed -i "s/CHANGE_ME_DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_URL/g" pcf-pipelines/tasks/export-config/task.yml
 sed -i "s/CHANGE_ME_DOCKER_REGISTRY_USERNAME/$DOCKER_REGISTRY_USERNAME/g" pcf-pipelines/tasks/export-config/task.yml
@@ -21,3 +33,58 @@ echo
 echo "Changes:"
 cat pcf-pipelines/tasks/export-config/task.yml
 cat pipelines/pcf-pipelines-patcher/operations/use-docker-private-registry.yml
+
+# Concourse uses curly braces for {{placeholders}}
+# We need to wrap placeholders in quotes to make them strings prior to parsing the YAML
+# We then unwrap the quotes after modifying the YAML
+function patch {
+echo
+echo "Patching $1 with $2..."
+sed -i -e "s/{{/'{{/g" -e "s/}}/}}'/g" $1
+cat $1 | yaml-patch -o $2 > /tmp/output.yml
+sed -i -e "s/'{{/((/g" -e "s/}}'/))/g" /tmp/output.yml
+cp /tmp/output.yml $1
+}
+
+echo
+echo "Running yaml-patch operations..."
+patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/use-product-releases-from-s3-tiles.yml
+patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/manual-apply-changes.yml
+
+patch pcf-pipelines/tasks/stage-product/task.yml $ops_dir/use-docker-private-registry.yml
+patch pcf-pipelines/tasks/upload-product-and-stemcell/task.yml $ops_dir/use-docker-private-registry.yml
+patch pcf-pipelines/tasks/wait-opsman-clear/task.yml $ops_dir/use-docker-private-registry.yml
+patch pcf-pipelines/tasks/apply-changes/task.yml $ops_dir/use-docker-private-registry.yml
+
+echo
+echo "Copying changes to pcf-pipelines internal repository..."
+cp -fR pcf-pipelines/* pcf-pipelines-internal
+
+pushd pcf-pipelines-internal
+if [[ -z $(git status --porcelain) ]];
+then
+  echo
+  echo "No changes, skipping commit"
+  popd && git clone pcf-pipelines-internal updates
+else
+  echo
+  echo "Changes detected, commiting changes..."
+  popd && git clone pcf-pipelines updates && cp -fR pcf-pipelines/* updates && cd updates
+
+  echo
+  echo "Setting CI author..."
+  git config --global user.email "ci@automation"
+  git config --global user.name "CI Automation"
+
+  echo
+  echo "Adding updated files..."
+  git add -A
+
+  echo
+  echo "Current git status..."
+  git status
+
+  echo
+  echo "Commit and pushing to GitHub..."
+  git commit -m "Add custom pcf-pipelines configuration"
+fi
