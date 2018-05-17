@@ -19,18 +19,18 @@ STEMCELL_VERSION=$(
     '
 )
 
+echo "Attempting to downloading stemcell $STEMCELL_VERSION"
+
 if [ -z "$STEMCELL_VERSION" ]; then
   echo "Cannot bundle stemcell with product"
   echo "Metadata not available containing required stemcell version within product! Check the released binary and if this is indeed the case then raise a support ticket"
   exit 1
 fi
 
-echo "Downloading stemcell $STEMCELL_VERSION"
-
 IAAS=vsphere
 
 pivnet-cli login --api-token="$PIVNET_API_TOKEN"
-pivnet-cli download-product-files -p "stemcell" -r $STEMCELL_VERSION -g "*${IAAS}*" --accept-eula
+pivnet-cli download-product-files -p "stemcells" -r $STEMCELL_VERSION -g "*${IAAS}*" --accept-eula
 
 SC_FILE_PATH=`find ./ -name *.tgz`
 
