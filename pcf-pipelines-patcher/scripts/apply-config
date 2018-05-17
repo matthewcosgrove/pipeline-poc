@@ -59,6 +59,7 @@ cp /tmp/output.yml $1
 
 echo
 echo "Running yaml-patch operations..."
+patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/replace-pcf-pipelines-git-repo.yml
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/use-product-releases-from-s3-tiles.yml
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/manual-apply-changes.yml
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/prepare-stemcell.yml

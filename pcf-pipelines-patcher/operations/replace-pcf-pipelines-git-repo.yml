@@ -1,0 +1,12 @@
+---
+- op: replace
+  path: /resources/name=pcf-pipelines
+  value:
+    name: pcf-pipelines
+    type: git
+    source:
+      uri: ((pcf-pipelines_uri))
+      branch: master
+      username: ((pcf-pipelines_username))
+      password: ((pcf-pipelines_password))
+      private_key: ((pcf-pipelines_private_key))
