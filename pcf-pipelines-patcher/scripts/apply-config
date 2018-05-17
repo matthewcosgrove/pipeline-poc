@@ -10,6 +10,8 @@ echo "Modifying task scripts..."
 # Customize upload-product-and-stemcell task to use s3
 sed -i 's/Downloading stemcell/Uploading stemcell/' pcf-pipelines/tasks/upload-product-and-stemcell/task.sh # Delete pivnet stemcell download references
 sed -i '/pivnet-cli/d' pcf-pipelines/tasks/upload-product-and-stemcell/task.sh # Delete pivnet-cli references
+# TODO: Remove after PR merged https://github.com/pivotal-cf/pcf-pipelines/pull/177
+sed -i 's/.*" running-status\.txt.*/jq -er "\.installations[0] | select(.status == \"running\") | .status" running-status\.txt/' pcf-pipelines/tasks/wait-opsman-clear/task.sh # Delete pivnet-cli references
 # TODO: Remove after issue resolved https://github.com/pivotal-cf/pcf-pipelines/issues/176
 sed -i "s^version=.*^version=\"\$\(unzip -p pivnet-product\/\*\.pivotal \'metadata\/\*\.yml\' \| grep \'product_version:\' \| cut -d \':\' -f 2 \| tr -d \' \' \| tr -d \"\'\"\)\"\nversion=\"\$\{version\/\\\\\&product-version\}\" \nversion=\"\$\{version\%\\\\\"\}\" \nversion=\"\$\{version#\\\\\"\}\"^" pcf-pipelines/tasks/stage-product/task.sh
 
@@ -50,11 +52,14 @@ echo
 echo "Running yaml-patch operations..."
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/use-product-releases-from-s3-tiles.yml
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/manual-apply-changes.yml
+patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/prepare-stemcell.yml
 
 patch pcf-pipelines/tasks/stage-product/task.yml $ops_dir/use-docker-private-registry.yml
 patch pcf-pipelines/tasks/upload-product-and-stemcell/task.yml $ops_dir/use-docker-private-registry.yml
 patch pcf-pipelines/tasks/wait-opsman-clear/task.yml $ops_dir/use-docker-private-registry.yml
 patch pcf-pipelines/tasks/apply-changes/task.yml $ops_dir/use-docker-private-registry.yml
+
+patch pcf-pipelines/tasks/upload-product-and-stemcell/task.yml $ops_dir/prepared-stemcell-as-input.yml
 
 echo
 echo "Copying changes to pcf-pipelines internal repository..."

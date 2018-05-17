@@ -1,0 +1,10 @@
+---
+- op: add
+  path: /jobs/name=upload-and-stage-tile/task=upload-tile-and-stemcell
+  value:
+    file: pcf-pipelines/tasks/prepare-stemcell/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_VM_PASSWORD: {{opsman_vm_password}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+    task: prepare-stemcell
