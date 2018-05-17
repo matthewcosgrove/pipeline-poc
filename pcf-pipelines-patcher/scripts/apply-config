@@ -1,6 +1,13 @@
 #!/bin/bash
 set -eu
 
+: ${DOCKER_REGISTRY_URL:?"Need to set DOCKER_REGISTRY_URL non-empty"}
+: ${DOCKER_REGISTRY_IMAGE_EXPORT_CONFIG:?"Need to set DOCKER_REGISTRY_IMAGE_EXPORT_CONFIG non-empty"}
+: ${DOCKER_REGISTRY_IMAGE_CFLINUXFS2:?"Need to set DOCKER_REGISTRY_IMAGE_CFLINUXFS2 non-empty"}
+
+# Location of the pipelines operations directory
+ops_dir=pipelines/pcf-pipelines-patcher/operations
+
 echo
 echo "Adding custom tasks..."
 cp -fR pipelines/pcf-pipelines-patcher/tasks/* pcf-pipelines/tasks
