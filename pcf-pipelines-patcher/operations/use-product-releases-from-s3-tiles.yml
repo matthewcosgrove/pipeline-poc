@@ -27,9 +27,3 @@
 
 - op: remove
   path: /resource_types
-
-- op: add
-  path: /jobs/name=upload-and-stage-tile/get=pcf-pipelines
-  value:
-    do:
-    - get: stemcell
