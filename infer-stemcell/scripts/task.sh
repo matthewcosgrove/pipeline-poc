@@ -43,4 +43,4 @@ echo Embedding stemcell within final product tgz file
 mv *.tgz pivnet-product
 
 # taken from embedded script in original pivnet-to-s3 pipeline.yml
-cd pivnet-product/ && tar -czvf ../tile/$(cat ./version | cut -f1 -d"#").tgz . && cd ..
+cd pivnet-product/ && tar -czvf ../tile/$(cat ./version | cut -f1 -d"#")-with-stemcell-$STEMCELL_VERSION.tgz . && cd ..
