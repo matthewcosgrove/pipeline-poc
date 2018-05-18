@@ -1,5 +1,0 @@
----
-- op: add
-  path: /inputs/-
-  value:
-    name: prepared-stemcell

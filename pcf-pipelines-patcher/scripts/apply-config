@@ -62,14 +62,11 @@ echo "Running yaml-patch operations..."
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/replace-pcf-pipelines-git-repo.yml
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/use-product-releases-from-s3-tiles.yml
 patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/manual-apply-changes.yml
-patch pcf-pipelines/upgrade-tile/pipeline.yml $ops_dir/prepare-stemcell.yml
 
 patch pcf-pipelines/tasks/stage-product/task.yml $ops_dir/use-docker-private-registry.yml
 patch pcf-pipelines/tasks/upload-product-and-stemcell/task.yml $ops_dir/use-docker-private-registry.yml
 patch pcf-pipelines/tasks/wait-opsman-clear/task.yml $ops_dir/use-docker-private-registry.yml
 patch pcf-pipelines/tasks/apply-changes/task.yml $ops_dir/use-docker-private-registry.yml
-
-patch pcf-pipelines/tasks/upload-product-and-stemcell/task.yml $ops_dir/prepared-stemcell-as-input.yml
 
 echo
 echo "Copying changes to pcf-pipelines internal repository..."

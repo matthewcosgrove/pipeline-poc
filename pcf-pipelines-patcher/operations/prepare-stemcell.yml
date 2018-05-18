@@ -1,6 +1,0 @@
----
-- op: add
-  path: /jobs/name=upload-and-stage-tile/task=wait-opsman-clear
-  value:
-    file: pcf-pipelines/tasks/prepare-stemcell/task.yml
-    task: prepare-stemcell
