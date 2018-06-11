@@ -42,7 +42,7 @@ jobs:
         - |
           set -eu
           cd file
-          touch 1.12.4.txt
+          touch 1.12.6.txt
       outputs:
         - name: file
           path: file
@@ -52,6 +52,7 @@ jobs:
 - name: regulator
   plan:
   - get: s3-file-get
+    version: {path: 1.12.5.txt}
   - task: show-file
     config:
       platform: linux
