@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eu
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+target=$1
+
+fly -t $target sp -p s3-regex-poc -c $SCRIPT_DIR/pipeline.yml -l $SCRIPT_DIR/../../configuration/lab-throwback/pcf-automation-deployments/lab/throwback/pipelines/pivnet-to-s3/settings.yml

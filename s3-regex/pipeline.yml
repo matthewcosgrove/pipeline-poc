@@ -1,0 +1,75 @@
+---
+resources:
+- name: s3-file-put
+  type: s3
+  source:
+    bucket: stemcells
+    regexp: (.*).txt
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+    endpoint: ((s3_endpoint))
+    disable_ssl: true
+
+- name: s3-file-get
+  source:
+    access_key_id: ((s3_access_key_id))
+    bucket: stemcells
+    disable_ssl: true
+    endpoint: ((s3_endpoint))
+    regexp: (1\.12\.*).txt
+    secret_access_key: ((s3_secret_access_key))
+  type: s3
+
+jobs:
+- name: upload-file-to-s3
+  plan:
+  - task: create-file
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-private-registry_url))/ubuntu
+          tag: latest
+          insecure_registries:
+          - ((docker-private-registry_url))
+          username: ((docker-private-registry_username))
+          password: ((docker-private-registry_password))
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          set -eu
+          cd file
+          touch 1.12.4.txt
+      outputs:
+        - name: file
+          path: file
+  - put: s3-file-put
+    params:
+      file: file/*.txt
+- name: regulator
+  plan:
+  - get: s3-file-get
+  - task: show-file
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-private-registry_url))/ubuntu
+          tag: latest
+          insecure_registries:
+          - ((docker-private-registry_url))
+          username: ((docker-private-registry_username))
+          password: ((docker-private-registry_password))
+      inputs:
+        - name: s3-file-get
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          set -eu
+          ls s3-file-get
