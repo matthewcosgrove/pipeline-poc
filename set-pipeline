@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eu
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+target=$1
+
+fly -t $target sp -p infer-stemcell-poc-upgrade-ert -c $PCF_AUTOMATION_PATCHED_PCF_PIPELINES_HOME/upgrade-tile/pipeline.yml -l $PCF_AUTOMATION_CONFIGURATION_HOME/labs/pcf-automation-deployments/lab/rp1/pipelines/upgrade-tile-ert/settings_stemcell_poc.yml

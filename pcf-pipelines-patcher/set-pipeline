@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eu
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+target=$1
+
+  fly -t $target sp -p pipeline-patcher-poc -c $ANSIBLE_PCF_AUTOMATION_PIPELINES_HOME/pcf-pipelines-patcher/pipeline.yml -l $PCF_AUTOMATION_CONFIGURATION_HOME/labs/pcf-automation-deployments/lab/rp1/pipelines/pcf-pipelines-patcher/settings_stemcell_poc.yml
