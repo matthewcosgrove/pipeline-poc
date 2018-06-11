@@ -16,7 +16,7 @@ resources:
     bucket: stemcells
     disable_ssl: true
     endpoint: ((s3_endpoint))
-    regexp: (1\.12\.*).txt
+    regexp: (1\.12\.\d+).txt
     secret_access_key: ((s3_secret_access_key))
   type: s3
 
