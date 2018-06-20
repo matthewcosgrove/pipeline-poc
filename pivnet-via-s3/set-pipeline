@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -eu
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CONFIG_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../.. && pwd )"
+
+PIPELINE_NAME=pivnet-via-s3
+PIPELINE_CONFIG=$CONFIG_DIR/poc-config/conf/pipelines/$PIPELINE_NAME/settings.yml
+target=$1
+
+fly -t $target sp -p $PIPELINE_NAME-poc -c $SCRIPT_DIR/pipeline.yml -l $PIPELINE_CONFIG

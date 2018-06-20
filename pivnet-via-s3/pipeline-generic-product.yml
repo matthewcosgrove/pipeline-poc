@@ -1,0 +1,142 @@
+---
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: ((docker-private-registry_url))/pivotalcf/pivnet-resource
+    tag: latest
+    insecure_registries:
+    - ((docker-private-registry_url))
+    username: ((docker-private-registry_username))
+    password: ((docker-private-registry_password))
+
+resources:
+- name: pivnet-product
+  type: pivnet
+  source:
+    api_token: {{pivnet_token}}
+    product_slug: redisorrabbit??
+    product_version: {{elastic-runtime_version}}
+
+- name: s3-tile-ert
+  type: s3
+  source:
+    bucket: ert-poc
+    regexp: (.*).tgz
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+    endpoint: ((s3_endpoint))
+    disable_ssl: true
+
+- name: s3-file-get
+  source:
+    access_key_id: ((s3_access_key_id))
+    bucket: ert-poc
+    disable_ssl: true
+    endpoint: ((s3_endpoint))
+    regexp: ((product_version_regex)).tgz
+    secret_access_key: ((s3_secret_access_key))
+  type: s3
+
+jobs:
+- name: upload-pivnet-product-to-s3
+  plan:
+  - get: pivnet-product
+    trigger: true
+    params:
+      globs:
+      - "*.pivotal"
+      - "*.json"
+  - task: zip-tile
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-private-registry_url))/czero/cflinuxfs2
+          tag: latest
+          insecure_registries:
+          - ((docker-private-registry_url))
+          username: ((docker-private-registry_username))
+          password: ((docker-private-registry_password))
+      inputs:
+        - name: pivnet-product
+      params:
+        PIVNET_API_TOKEN: {{pivnet_token}}
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          set -eu
+
+          STEMCELL_VERSION=$(
+            cat ./pivnet-product/metadata.json |
+            jq --raw-output \
+              '
+              [
+                .Dependencies[]
+                | select(.Release.Product.Name | contains("Stemcells"))
+                | .Release.Version
+              ]
+              | map(split(".") | map(tonumber))
+              | transpose | transpose
+              | max // empty
+              | map(tostring)
+              | join(".")
+              '
+          )
+
+          echo "Attempting to download stemcell $STEMCELL_VERSION"
+
+          if [ -z "$STEMCELL_VERSION" ]; then
+            echo "Cannot bundle stemcell with product"
+            echo "Metadata not available containing required stemcell version within product! Check the released binary and if this is indeed the case then raise a support ticket"
+            exit 1
+          fi
+
+          IAAS=vsphere
+
+          pivnet-cli login --api-token="$PIVNET_API_TOKEN"
+          pivnet-cli download-product-files -p "stemcells" -r $STEMCELL_VERSION -g "*${IAAS}*" --accept-eula
+
+          SC_FILE_PATH=`find ./ -name *.tgz`
+
+          if [ ! -f "$SC_FILE_PATH" ]; then
+            echo "Stemcell file not found!"
+            exit 1
+          fi
+
+          echo "Embedding stemcell $STEMCELL_VERSION within final product tgz file for $(cat ./pivnet-product/version | cut -f1 -d"#")"
+          mv *.tgz pivnet-product
+          cd pivnet-product/ && tar -czvf ../tile/$(cat ./version | cut -f1 -d"#").tgz . && cd ..
+      outputs:
+        - name: tile
+          path: tile
+  - put: s3-tile-ert
+    params:
+      file: tile/*.tgz
+- name: regulator
+  plan:
+  - get: s3-file-get
+  - task: show-file
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-private-registry_url))/ubuntu
+          tag: latest
+          insecure_registries:
+          - ((docker-private-registry_url))
+          username: ((docker-private-registry_username))
+          password: ((docker-private-registry_password))
+      inputs:
+        - name: s3-file-get
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          set -eu
+          ls s3-file-get
