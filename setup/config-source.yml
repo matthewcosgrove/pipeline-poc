@@ -1,0 +1,8 @@
+pcf.ert.version_regex: CHANGEME #Required. Version of ERT usually with a wildcard on the patch part of the version. Wildcard Example: 1\\.12\\..* Specific Version Example: 1\\.12\\.16
+pivnet.token: CHANGEME #Required. 
+
+network.first-three-octets: CHANGEME #Required. The first THREE octets of the environments IP range.
+
+#Minio
+minio.accesskey: CHANGEME #Required.
+minio.secretkey: CHANGEME #Required.

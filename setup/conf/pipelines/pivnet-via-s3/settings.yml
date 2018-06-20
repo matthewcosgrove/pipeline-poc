@@ -1,0 +1,16 @@
+# General config
+pivnet_token: {pivnet.token} #Required.
+
+docker-private-registry_url: {network.first-three-octets}.73:443 #Required.
+docker-private-registry_username: ""
+docker-private-registry_password: ""
+s3_access_key_id: {minio.accesskey} #Required.  Minio Access Key.
+s3_secret_access_key: {minio.secretkey} #Required.  Minio Access Key.
+s3_endpoint: http://{network.first-three-octets}.97 #Required.  Minio API URL.  Can be the IP of any of the Minio nodes.
+
+
+# Pipeline 1: pivnet to s3
+elastic-runtime_version: "{pcf.ert.version_regex}$" # Limit PivNet replication to specific version, e.g. 1.11.*
+
+# Pipeline 2: pull from s3 for ERT upgrade
+product_version_regex: "({pcf.ert.version_regex})" #Required.  Change staged ERT versions, currently immediately stages all patch versions when available.  Default: (1.11.*)
